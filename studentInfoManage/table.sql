@@ -6,9 +6,11 @@ create table teachers (
 
 create table courses (
     id char(10),
-    name varchar(20));
+    name varchar(20),
+    description varchar(200),
+    primary key (id));
 
-create table teaches (
+create table classes (
     class_id char(10),
     t_id char(10),
     c_id char(10),
@@ -16,4 +18,25 @@ create table teaches (
     foreign key (c_id) references courses(id)
     primary key (class_id));
 
+create table students (
+    student_id char(10),
+    name varchar(20),
+    password varchar(20),
+    primary key (student_id));
 
+create table homework_require (
+    hw_id char(10),
+    class_id char(10),
+    teacher_id char(10),
+    description char(200),
+    foreign key (class_id) references classes(class_id),
+    foreign key (teacher_id) references teachers(teacher_id),
+    primary key (hw_id));
+
+create table homework_submit (
+    submit_id char(10) not null identity,
+    hw_id char(10),
+    student_id char(10),
+    foreign key (hw_id) references homework_require(hw_id),
+    foreign key (student_id) references students(student_id),
+    primary key (submit_id));
