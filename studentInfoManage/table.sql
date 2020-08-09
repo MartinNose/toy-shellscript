@@ -1,3 +1,5 @@
+use hwInfo
+
 create table teachers (
     id char(10),
     name varchar(20),
@@ -15,7 +17,7 @@ create table classes (
     t_id char(10),
     c_id char(10),
     foreign key (t_id) references teachers(id),
-    foreign key (c_id) references courses(id)
+    foreign key (c_id) references courses(id),
     primary key (class_id));
 
 create table students (
@@ -30,11 +32,11 @@ create table homework_require (
     teacher_id char(10),
     description char(200),
     foreign key (class_id) references classes(class_id),
-    foreign key (teacher_id) references teachers(teacher_id),
+    foreign key (teacher_id) references teachers(id),
     primary key (hw_id));
 
 create table homework_submit (
-    submit_id char(10) not null identity,
+    submit_id int not null auto_increment,
     hw_id char(10),
     student_id char(10),
     foreign key (hw_id) references homework_require(hw_id),
