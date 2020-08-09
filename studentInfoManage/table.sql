@@ -39,6 +39,7 @@ create table homework_submit (
     submit_id int not null auto_increment,
     hw_id char(10),
     student_id char(10),
+    score int,
     foreign key (hw_id) references homework_require(hw_id),
     foreign key (student_id) references students(student_id),
     primary key (submit_id));
