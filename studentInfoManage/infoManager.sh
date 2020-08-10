@@ -31,15 +31,12 @@ admin () {
     echo
     echo -e "\tWelcome, $1. Please specify what do you want to do"
     echo
-    echo -e "\t\t1. System Admin"
+    echo -e "\t\t1. Teacher Info"
     echo
-    echo -e "\t\t2. Teacher"
-    echo
-    echo -e "\t\t3. Student"
+    echo -e "\t\t2. Course Info"
     echo
     read -n1 option
     clear
-    echo -n "You chose "
     case $option in
     1)
         # Admin part
