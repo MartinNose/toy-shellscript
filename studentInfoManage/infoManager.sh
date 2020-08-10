@@ -94,6 +94,12 @@ teacher_delete () {
         esac
     fi
 }
+
+teacher_list () {
+    echo "Listing all teachers information..."
+    mysql hwInfo -u admin -e "SELECT * FROM teachers;"
+}
+
 teacher () {
     title
     echo -e "\tManaging information about teachers. Please specify your requirement"
