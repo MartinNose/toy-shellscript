@@ -43,13 +43,13 @@ admin () {
     case $option in
     1)
         # Admin part
-        admin
+        admin ;;
     2)
         # echo "Teacher!";;
-        teacher
+        teacher ;;
     3)
         # echo "Student!";;
-        student
+        student ;;
     *)
         echo "Wrong Option, please choose again!";;
     esac
@@ -72,13 +72,13 @@ welcome () {
     case $option in
     1)
         # Admin part
-        admin
+        admin ;;
     2)
         # echo "Teacher!";;
-        teacher
+        teacher ;;
     3)
         # echo "Student!";;
-        student
+        student ;;
     *)
         echo "Wrong Option, please choose again!";;
     esac
