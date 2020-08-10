@@ -19,7 +19,7 @@ admin_login () {
         admin "$username"
     else
         read -n1 -p "Wrong username or password. Press q to quit" option
-        if [[ option = 'q' ]]; then
+        if [[ $option = 'q' ]]; then
             exit
         fi
         admin_login
