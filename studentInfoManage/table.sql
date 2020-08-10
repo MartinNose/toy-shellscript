@@ -9,7 +9,7 @@ create table admins (
 create table teachers (
     id char(10),
     name varchar(20),
-    passward varchar(20),
+    password varchar(20),
     primary key (id));
 
 create table courses (
