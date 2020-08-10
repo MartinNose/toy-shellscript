@@ -1,5 +1,11 @@
 use hwInfo
 
+create table admins (
+    id int not null auto_increment,
+    name varchar(10),
+    password varchar(20),
+    primary key (id));
+
 create table teachers (
     id char(10),
     name varchar(20),

@@ -72,13 +72,13 @@ welcome () {
     case $option in
     1)
         # Admin part
-        admin ;;
+        admin_login ;;
     2)
         # echo "Teacher!";;
-        teacher ;;
+        teacher_login ;;
     3)
         # echo "Student!";;
-        student ;;
+        student_login ;;
     *)
         echo "Wrong Option, please choose again!";;
     esac
