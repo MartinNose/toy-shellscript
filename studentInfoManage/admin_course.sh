@@ -133,4 +133,5 @@ course () {
     6)
         return 1 ;;
     esac
+    return 0
 }
