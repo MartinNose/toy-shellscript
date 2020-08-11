@@ -21,13 +21,13 @@ course_alter () {
     echo "Altering a course infomation..."
     read -p "Please input id of the course: " id
     name=$(mysql hwInfo -u admin -e "SELECT name FROM courses WHERE id = '$id';" | tail -n1)
-    if [[ ! -z res ]]; then
+    if [[ ! -z "$res" ]]; then
         echo "Current couse name is ${res[1]}"
         read -n1 -p "Do you want to alter?(y/n)" option
         if [[ "$option" == n ]] or [[ "$option" == N ]]; then
             return 1;
         fi
-        read -p "Please input new course name" name ;;
+        read -p "Please input new course name" name ;
         mysql hwInfo -u admin -e "UPDATE courses SET name = '$name' WHERE id = '$id';"
         if [[ $? -eq 0 ]]; then
             read -n1 -p "Alter succeeded. Press any button to return" option
@@ -47,40 +47,63 @@ course_alter () {
     esac
 }
 
-ifQuit () {
-    case $1 in
-    y|Y)
-        return 1 ;;
-    *)
-        return 0 ;;
-    esac
-}
-
 course_bind () {
     echo "Binding a course to a teacher"
     read -p "Please specify the course id: " cid
     cname=$(mysql hwInfo -u admin -e "SELECT name FROM courses WHERE id='$cid';" | tail -n1)
     if [[ -z $cname ]]; then
         read -n1 -p "Invalid course id. Retry?(y/n)" option
-        ifQuit option
+        ifRetry "$option"
         return $?
     fi
     read -p "Please specify the teacher id: " tid
     tname=$(mysql hwInfo -u admin -e "SELECT name FROM teachers WHERE id='$tid';" | tail -n1)
     if [[ -z $tname ]]; then
         read -n1 -p "Invalid teacher id. Retry?(y/n)" option
-        ifQuit option
+        ifRetry "$option"
         return $?
     fi
-    mysql hwInfo -u admin -e "INSERT INTO teachei:" # TODO INsert
+    read -p "Please specify the class id: " class_id
+    mysql hwInfo -u admin -e "INSERT INTO classes(class_id, t_id, c_id) values ('$class_id','$tid','$cid');"
+    if [[ $? -eq 0 ]]; then
+        read -n1 -p "Bind succeeded. Press any button to continue..."
+        return 1;
+    else
+        read -n1 -p "Bind failed. Retry?(y/N)" option
+        ifRetry "$option"
+        return $?
+    fi
 }
 
 course_list () {
-
+    echo "Listing all the classes..."
+    mysql -u admin -e "SELECT * FROM classes;"
+    read -n1 -p "Press any button to continue..." 
 }
 
 course_unbind () {
-
+    echo "Unbinding a class..."
+    read -p "Please specify the class id" id
+    res=($(mysql -u admin -e "SELECT c_id, t_id FROM classes WHERE class_id = '$id';" | tail -n1))
+    if [[ -z "$res" ]]; then
+        read -n1 -p "Invalid class id. Retry?(y/N)" option
+        ifRetry "$option"
+        return $?
+    fi
+    c_id=${res[0]}
+    t_id=${res[1]} 
+    echo "Unbinding the class with course_id: $c_id and teacher_id: $t_id..."
+    isOK
+    case $? in
+    0)
+        mysql -u admin -e "DELETE FROM classes WHERE class_id = '$id';" ;;
+    1)
+        return 1 ;; 
+    esac
+    if [[ $? -eq 0 ]]; then
+        read -n1 -p "DELETE SUCCESS. Press any button to return..." option
+        return 1 
+    fi
 }
 
 course () {
