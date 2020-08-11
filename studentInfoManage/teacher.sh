@@ -22,32 +22,35 @@ source teacher_util.sh
 
 teacher () {
     title
-    echo -e "\tWelcome, $1. Please specify what do you want to do"
+    list_course $1
+    echo -e "Please specify what do you want to do"
     echo
-    echo -e "\t\t1. Import student to course"
+    echo -e "\t1. Import students to course"
     echo
-    echo -e "\t\t2. Manage student info in one course"
+    echo -e "\t2. Remove student from course"
     echo
-    echo -e "\t\t3. Manage course info"
+    echo -e "\t3. Change course description"
     echo
-    echo -e "\t\t4. Assign homework"
+    echo -e "\t4. Assign homework"
     echo
-    echo -e "\t\t5. Review homework"
+    echo -e "\t5. Review homework"
     echo
-    echo -e "\t\t6. Go back"
+    echo -e "\t6. Go back"
     read -n1 option
     clear
+    title
+    list_course $1
     case $option in
     1)
-        rep import_student $id ;;
+        rep import_student $1 ;;
     2)
-        rep alter_student $id ;;
+        rep alter_student $1 ;;
     3)
-        rep manage_course ;;
+        rep manage_course $1 ;;
     4)
-        rep assign_hw ;;
+        rep assign_hw $1 ;;
     5)
-        rep review_hw ;;
+        rep review_hw $1 ;;
     6)
         return 1 ;;
     *)

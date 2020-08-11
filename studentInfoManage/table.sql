@@ -52,6 +52,7 @@ create table hw_submit (
     hw_id char(10),
     student_id char(10),
     score int,
+    hw_path varchar(100),
     foreign key (hw_id) references hw_require(hw_id),
     foreign key (student_id) references students(student_id),
     primary key (submit_id));
