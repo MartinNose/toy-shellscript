@@ -1,8 +1,10 @@
+#!/bin/bash
 course_create () {
     echo "Creating a new course..."
     read -p "Please input the course id: " id
     read -p "Please input the course name: " name
-    mysql hwInfo -u admin -e "INSERT INTO courses (id, name) values ('$id', '$name);"
+    echo
+    mysql hwInfo -u admin -e "INSERT INTO courses (id, name) values ('$id', '$name');"
     if [[ $? -eq 0 ]]; then
         read -n1 -p "Insert successfully. Press any button to return." option
         return 1
@@ -21,17 +23,18 @@ course_alter () {
     echo "Altering a course infomation..."
     read -p "Please input id of the course: " id
     name=$(mysql hwInfo -u admin -e "SELECT name FROM courses WHERE id = '$id';" | tail -n1)
-    if [[ ! -z "$res" ]]; then
-        echo "Current couse name is ${res[1]}"
+    if [[ ! -z "$name" ]]; then
+        echo "Current couse name is $name"
         read -n1 -p "Do you want to alter?(y/n)" option
-        if [[ "$option" == n ]] or [[ "$option" == N ]]; then
-            return 1;
+        if [[ "$option" == n ]] || [[ "$option" == N ]]; then
+            return 1
         fi
+        echo
         read -p "Please input new course name" name ;
         mysql hwInfo -u admin -e "UPDATE courses SET name = '$name' WHERE id = '$id';"
         if [[ $? -eq 0 ]]; then
             read -n1 -p "Alter succeeded. Press any button to return" option
-            return 1;
+            return 1
         else
             read -n1 -p "Operation failed. Retry?(y/N)" option
         fi
@@ -77,14 +80,22 @@ course_bind () {
 
 course_list () {
     echo "Listing all the classes..."
-    mysql -u admin -e "SELECT * FROM classes;"
+    mysql hwInfo -u admin -e "SELECT * FROM courses;"
     read -n1 -p "Press any button to continue..." 
+    return 1
 }
+
+class_list () {
+    echo "Listing all the classes..."
+    mysql hwInfo -u admin -e "SELECT * FROM classes;"
+    read -n1 -p "Press any button to continue..." 
+    return 1
+} 
 
 course_unbind () {
     echo "Unbinding a class..."
     read -p "Please specify the class id" id
-    res=($(mysql -u admin -e "SELECT c_id, t_id FROM classes WHERE class_id = '$id';" | tail -n1))
+    res=($(mysql hwInfo -u admin -e "SELECT c_id, t_id FROM classes WHERE class_id = '$id';" | tail -n1))
     if [[ -z "$res" ]]; then
         read -n1 -p "Invalid class id. Retry?(y/N)" option
         ifRetry "$option"
@@ -96,7 +107,7 @@ course_unbind () {
     isOK
     case $? in
     0)
-        mysql -u admin -e "DELETE FROM classes WHERE class_id = '$id';" ;;
+        mysql hwInfo -u admin -e "DELETE FROM classes WHERE class_id = '$id';" ;;
     1)
         return 1 ;; 
     esac
@@ -108,16 +119,17 @@ course_unbind () {
 
 course () {
     title
-    echo -e "\t\tManaging information about teachers"
+    echo -e "\tManaging information about teachers"
     echo
-    echo -e "\t\t\t1. Create a new course"
-    echo -e "\t\t\t2. Alter a course"
-    echo -e "\t\t\t3. Bind a course to a teacher"
-    echo -e "\t\t\t4. List all the course"
-    echo -e "\t\t\t5. Unbind a course from a teacher"
-    echo -e "\t\t\t6. Go back"
+    echo -e "\t\t1. Create a new course"
+    echo -e "\t\t2. Alter a course"
+    echo -e "\t\t3. Bind a course to a teacher"
+    echo -e "\t\t4. List all the courses"
+    echo -e "\t\t5. Unbind a course from a teacher"
+    echo -e "\t\t6. List all the classes"
+    echo -e "\t\t7. Go back"
     echo
-    read -n1 option
+    read -n1 -p "Your choice: " option
     title
     case $option in
     1)
@@ -131,6 +143,8 @@ course () {
     5)
         rep course_unbind ;;
     6)
+        rep class_list ;;
+    7)
         return 1 ;;
     esac
     return 0

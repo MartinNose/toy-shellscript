@@ -4,11 +4,11 @@
 yesCheck () {
     case $1 in
     y|Y)
-        return 0 ;;
+        echo 0 ;;
     n|N)
-        return 1 ;;
+        echo 1 ;;
     *)
-        return 3 ;;
+        echo 3 ;;
     esac
 }
 

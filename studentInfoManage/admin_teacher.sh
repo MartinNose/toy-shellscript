@@ -1,3 +1,4 @@
+#!/bin/bash
 teacher_insert () { option
     echo "Creating a new teacher account..."
     read -p "10 Characters id:" id
