@@ -32,7 +32,13 @@ create table students (
     password varchar(20),
     primary key (student_id));
 
-create table homework_require (
+create table enroll (
+    class_id char(10),
+    student_id char(10),
+    foreign key (student_id) references students(student_id),
+    foreign key (class_id) references classes(class_id));
+    
+create table hw_require (
     hw_id char(10),
     class_id char(10),
     teacher_id char(10),
@@ -41,11 +47,11 @@ create table homework_require (
     foreign key (teacher_id) references teachers(id),
     primary key (hw_id));
 
-create table homework_submit (
+create table hw_submit (
     submit_id int not null auto_increment,
     hw_id char(10),
     student_id char(10),
     score int,
-    foreign key (hw_id) references homework_require(hw_id),
+    foreign key (hw_id) references hw_require(hw_id),
     foreign key (student_id) references students(student_id),
     primary key (submit_id));
