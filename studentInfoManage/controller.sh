@@ -1,6 +1,9 @@
 #!/bin/bash
 # 本脚本负责用户输入的处理和对数据接口的调用
 
+sql () {
+    mysql hwInfo -u admin -e "$1"
+}
 yesCheck () {
     case $1 in
     y|Y)

@@ -6,7 +6,7 @@ manual_enroll () {
         if [[ "$s_id" == q ]]; then
             return
         fi
-        mysql hwInfo -v -u admin -e "insert into enroll (student_id, class_id) values ('$s_id', '$class_id');" 1>sql.log 2>err.log
+        sql "insert into enroll (student_id, class_id) values ('$s_id', '$class_id');" 1>sql.log 2>err.log
         if (($?)); then
             echo "insert failed. please check more information in sql.log and err.log" 
         else
@@ -19,7 +19,7 @@ auto_enroll () {
     read -p "please input the file path" path 
     cat "$path" | while read line; do
         echo "inserting student with id $line"
-        mysql hwInfo -v -u admin -e "insert into enroll (student_id, class_id) values ('$line', '$class_id');" 1>sql.log 2>err.log
+        sql "insert into enroll (student_id, class_id) values ('$line', '$class_id');" 1>sql.log 2>err.log
         if (($?)); then
             echo "insert failed. please check more information in sql.log and err.log" 
         else
@@ -40,11 +40,11 @@ enroll () {
 
 list_course () {
     echo "listing all classes insturcted by you"
-    mysql hwInfo -u admin -e "select class_id, teachers.name as teacher_name, t_id,  courses.name as course_name, courses.id as c_id from classes join courses join teachers where classes.c_id = courses.id and t_id = teachers.id and t_id = '$1';"
+    sql "select class_id, teachers.name as teacher_name, t_id,  courses.name as course_name, courses.id as c_id from classes join courses join teachers where classes.c_id = courses.id and t_id = teachers.id and t_id = '$1';"
 }
 
 checkclassid () {
-    res=$( mysql hwInfo -u admin -e "select * from classes where class_id = '$1';" | tail -n1 )
+    res=$( sql "select * from classes where class_id = '$1';" | tail -n1 )
     if [[ -z "$res" ]]; then
         read -p "Wrong class_id. retry?(y/n)" option
         if [[ "$option" = y ]] || [[ "$option" = Y ]]; then
@@ -71,7 +71,7 @@ get_class_id () {
 }
 
 checkstudentid () {
-    res=$( mysql hwInfo -u admin -e "select * from students where student_id = '$1';" | tail -n1 )
+    res=$( sql "select * from students where student_id = '$1';" | tail -n1 )
     if [[ -z "$res" ]]; then
         read -p "Wrong class_id. retry?(y/n)" option
         if [[ "$option" = y ]] || [[ "$option" = Y ]]; then
@@ -99,14 +99,14 @@ get_student_id () {
 
 show_enroll () {
     echo "Current enrollment:"
-    mysql hwInfo -u admin -e "select name, student_id from enroll natural join students where class_id = '$1';" 
+    sql "select name, student_id from enroll natural join students where class_id = '$1';" 
     if (($?)); then
         echo "no enrollment for this class."
     fi 
 }
 
 enroll_list () {
-    mysql hwInfo -u admin -e "select student_id from enroll natural join students where class_id = '$1';" | tail -n+2 
+    sql "select student_id from enroll natural join students where class_id = '$1';" | tail -n+2 
 }
 
 import_student () {
@@ -143,7 +143,7 @@ alter_student () {
             read -n1 option
             case $option in
             y|Y)
-                mysql hwInfo -u admin -e "DELETE FROM enroll WHERE class_id = '$class_id' and student_id = '$sid';" ;;
+                sql "DELETE FROM enroll WHERE class_id = '$class_id' and student_id = '$sid';" ;;
             n|N)
                 break ;; 
             esac
@@ -154,13 +154,13 @@ alter_student () {
 
 manage_course () {
     echo "You can configure your course description here. NOTE: The description will be shared by all the teacher of this course"
-    list=($(mysql hwInfo -u admin -e "SELECT c_id FROM classes WHERE t_id = '$1';" | tail -n +2))    
+    list=($(sql "SELECT c_id FROM classes WHERE t_id = '$1';" | tail -n +2))    
     list+=('exit')
     select c_id in "${list[@]}"; do
         if [[ "$c_id" = exit ]]; then
             return 1;
         fi
-        desc=$(mysql hwInfo -u admin -e "SELECT description FROM courses WHERE id = '$c_id';" | tail -n +2)
+        desc=$(sql "SELECT description FROM courses WHERE id = '$c_id';" | tail -n +2)
         if [[ ! -z "$desc" ]]; then
             echo "Current description:"
             echo "$desc"
@@ -176,14 +176,14 @@ manage_course () {
             done
         fi
         read -p "Please input the course descrition: " desc
-        mysql hwInfo -u admin -e "UPDATE courses SET description = '$desc' WHERE id = '$c_id';"
+        sql "UPDATE courses SET description = '$desc' WHERE id = '$c_id';"
         read -n1 -p "Insert done press any button to go back"
         return 1;
     done
 }
 
 add_hw_description () {
-    desc=$(mysql hwInfo -u admin -e "SELECT description FROM hw_require WHERE hw_id = '$1';" | tail -n +2)
+    desc=$(sql "SELECT description FROM hw_require WHERE hw_id = '$1';" | tail -n +2)
     if [[ ! -z "$desc" ]]; then
         echo "Current description:"
         echo "$desc"
@@ -199,41 +199,53 @@ add_hw_description () {
         done
     fi
     read -p "Please input the homework descrition: " desc
-    mysql hwInfo -u admin -e "UPDATE hw_require SET description = '$desc' WHERE hw_id = '$1';"
+    sql "UPDATE hw_require SET description = '$desc' WHERE hw_id = '$1';"
     read -n1 -p "Insert done press any button to go back"
     return 1;
 }
+
+create_hw () {
+    read -p "Please input the homework id: " id
+    read -p "Please input the homework description: " desc
+    sql "INSERT INTO hw_require (hw_id, class_id, teacher_id, description) values ('$id', '$2', '$1', '$desc');"
+}
 assign_hw () {
-    list=($(mysql hwInfo -u admin -e "SELECT c_id FROM classes WHERE t_id = '$1';" | tail -n +2))    
+   list=($(sql "SELECT class_id FROM classes WHERE t_id = '$1';" | tail -n +2))    
     list+=('exit')
-    select c_id in "${list[@]}"; do
-        if [[ "$c_id" = exit ]]; then
-            return 1
+    select cl_id in "${list[@]}"; do
+        if [[ "$cl_id" = exit ]]; then 
+            return 1 
         fi
         echo "Listing all the homework of current class." 
-        mysql hwInfo -u admin -e "SELECT * FROM hw_require WHERE class_id = '$1';"
-        hw_list=($("SELECT hw_id FROM hw_require WHERE class_id = '$1';" | tail -n+2))
+        ql "SELECT * FROM hw_require WHERE class_id = '$1';"
+        hw_list=($(sql "SELECT hw_id FROM hw_require WHERE class_id = '$cl_id';" | tail -n+2))
+        hw_list+=('Assign new homework')
         hw_list+=('exit')
         select hw_id in "${hw_list[@]}"; do
-            if [[ "$hw_id" = exit ]]; then
-                return 1;
-            fi
-            add_hw_description $hw_id
+            case $hw_id in
+            exit)
+                return 1 ;;
+            'Assign new homework')
+                create_hw "$1" "$cl_id" ;;
+            *) 
+                add_hw_description $hw_id ;;
+            esac
         done
     done
 }
 
 process_hw () {
-    mysql hwInfo -u admin -e "SELECT * FROM hw_submit WHERE submit_id = '$sub_id';"
+    echo "Listing current homework situation"
+    sql "SELECT * FROM hw_submit WHERE submit_id = '$sub_id';"
     list=(print score exit)    
     select option in "${list[@]}"; do
         case $option in
         print)
-            cat "$HWPATH$(mysql hwInfo -u admin -e "SELECT hw_path FROM hw_submit WHERE submit_id = '$1';" | tail -n 1)" ;; 
+            cat "$HWPATH$(sql "SELECT hw_path FROM hw_submit WHERE submit_id = '$1';" | tail -n 1)" ;; 
         score)
             read -p "Please input a score: " score
             if [[ "$score" -ge 0 ]] && [[ "$score" -le 100 ]]; then
-                mysql hwInfo -u admin -e "UPDATE hw_submit SET score = '$score' WHERE submit_id = '$1';"
+                sql "UPDATE hw_submit SET score = '$score' WHERE submit_id = '$1';"
             else
                 echo "Invalid number."
             fi ;;
@@ -243,26 +255,30 @@ process_hw () {
     done
 }
 review_hw_id () {
-    mysql hwInfo -u admin -e "SELECT * FROM hw_submit WHERE hw_id = '$1';"
-    list=($( mysql hwInfo -u admin -e "SELECT submit_id FROM hw_submit WHERE hw_id = '$1';")) 
+    echo "Listing all submit of homeword $1"
+    sql "SELECT hw_submit.*, name FROM hw_submit natural join students WHERE hw_id = '$1';"
+    list=($( sql "SELECT submit_id FROM hw_submit WHERE hw_id = '$1';" | tail -n +2)) 
     list+=('exit')
     select sub_id in "${list[@]}"; do
         if [[ "$sub_id" = exit ]]; then
-            return 1;
+            return ;
         fi
         process_hw "$sub_id" 
-        return 1
+        echo "Listing all submit of homeword $1"
+        sql "SELECT hw_submit.*, name FROM hw_submit natural join students WHERE hw_id = '$1';"
     done 
 }
 review_hw () {
-    mysql hwInfo -u admin -e "SELECT * FROM hw_require WHERE teacher_id = '$1';"
-    list=($(mysql hwInfo -u admin -e "SELECT hw_id FROM hw_require WHERE teacher_id = '$1';"))
+    echo "Listing all the homework you assigned."
+    sql "SELECT * FROM hw_require WHERE teacher_id = '$1';"
+    list=($(sql "SELECT hw_id FROM hw_require WHERE teacher_id = '$1';" | tail -n+2))
     list+=('exit')
     select hw_id in "${list[@]}"; do
         if [[ "$hw_id" = exit ]]; then
             return 1;
         fi
         review_hw_id "$hw_id"
-        return 1;
+        echo "Listing all the homework you assigned."
+        sql "SELECT * FROM hw_require WHERE teacher_id = '$1';"
     done
 }
