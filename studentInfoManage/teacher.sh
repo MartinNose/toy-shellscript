@@ -2,15 +2,15 @@
 
 teacher_login () {
     title
-    read -p "Enter your username:" username
+    read -p "Enter your id:" id
     read -s -p "Enter your password: " password
     echo
-    res=$(mysql hwInfo -u admin -e "SELECT * FROM teacherj WHERE name='$username' and password='$password';" | tail -n1) 
+    res=$(mysql hwInfo -u admin -e "SELECT * FROM teachers WHERE id='$id' and password='$password';" | tail -n1) 
     if [[ ! -z $res ]]; then
         clear
-        rep teacher "$username"
+        rep teacher "$id"
     else
-        read -n1 -p "Wrong username or password. Press a to abort, enter to try again." option
+        read -n1 -p "Wrong id or password. Press a to abort, enter to try again." option
         if [[ $option = 'a' ]]; then
            return 1 
         fi
@@ -18,7 +18,7 @@ teacher_login () {
     return 1
 }
 
-
+source teacher_util.sh
 
 teacher () {
     title
@@ -39,9 +39,9 @@ teacher () {
     clear
     case $option in
     1)
-        rep import_student ;;
+        rep import_student $id ;;
     2)
-        rep alter_student ;;
+        rep alter_student $id ;;
     3)
         rep manage_course ;;
     4)

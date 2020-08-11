@@ -18,6 +18,8 @@ student_login () {
     return 1
 }
 
+source student_util.sh
+
 student () {
     title
     echo -e "\tWelcome, $1. Please specify what do you want to do"
