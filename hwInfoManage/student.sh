@@ -34,13 +34,12 @@ student () {
     clear
     case $option in
     1)
-        rep check_hw ;;
+        rep check_hw $1 ;;
     2)
-        rep sub_hw ;;
+        rep sub_hw $1 ;;
     3)
         return 1 ;;
     *)
         return 0 ;;
     esac
-    return 0 
 }

@@ -1,6 +1,7 @@
 #!/bin/bash
 # 本脚本负责作业管理系统的交互
 
+export HWPATH="./submissions"
 rep () {
     while "$@" 
     do
