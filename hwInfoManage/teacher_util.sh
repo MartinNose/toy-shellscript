@@ -278,6 +278,7 @@ review_hw () {
             return 1;
         fi
         review_hw_id "$hw_id"
+        title
         echo "Listing all the homework you assigned."
         sql "SELECT * FROM hw_require WHERE teacher_id = '$1';"
     done
